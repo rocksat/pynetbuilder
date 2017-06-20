@@ -68,3 +68,10 @@ def test_shortcut_lego():
     ShortcutLego(params).attach(n, [n.data])
     # print >> sys.stderr, n.to_proto()
 
+def test_depth_wise_conv_lego():
+    from lego.hybrid import DWConvLego
+    n = caffe.NetSpec()
+    n.data, n.label = L.ImageData(image_data_param=dict(source='tmp' , batch_size=100),
+                                   ntop=2, transform_param=dict(mean_file='tmp'))
+    params = dict(name='dw1', num_output=64, group=32, stride=1, use_global_stats=False)
+    DWConvLego(params).attach(n, [n.data])

@@ -40,7 +40,7 @@ class ConvReLULego(BaseLego):
         self._required = ['name', 'kernel_size', 'num_output', 'pad', 'stride']
         self._check_required_params(params)
         self.convParams = deepcopy(params)
-        self.convParams['name'] = 'conv' + params['name']
+        self.convParams['name'] = 'conv' + params['name'] 
         self.reluParams = dict(name='relu' + params['name'])
 
     def attach(self, netspec, bottom):
@@ -68,6 +68,53 @@ class ConvBNLego(BaseLego):
         bn = BaseLegoFunction('BatchNorm', self.batchNormParams).attach(netspec, [conv])
         scale = BaseLegoFunction('Scale', self.scaleParams).attach(netspec, [bn])
         return scale
+
+class DWConvLego(BaseLego):
+    type = 'DepthWiseLego'
+    def __init__(self, params):
+        self._required = ['name', 'num_output', 'group', 'stride', 'use_global_stats']
+        self._check_required_params(params)
+
+        # Params for depth-wise convolution layer
+        self.dwConvParams = deepcopy(params)
+        del self.dwConvParams['use_global_stats']
+        self.dwConvParams['name'] = 'conv' + params['name'] + '/dw'
+        self.dwConvParams['num_output'] = params['group']
+        self.dwConvParams['engine'] = 1
+        self.dwConvParams['kernel_size'] = 3
+        self.dwConvParams['pad'] = 1
+        self.dwBatchNormParams = dict(use_global_stats=params['use_global_stats'],
+                name='conv' + params['name'] + '/dw/bn')
+        self.dwScaleParams = dict(name='conv' + params['name'] + '/dw/scale')
+        self.dwreluParams = dict(name='relu' + params['name'] + '/dw')
+
+        # Params for point-wise convolution layer
+        self.pwConvParams = deepcopy(params)
+        del self.pwConvParams['use_global_stats']
+        del self.pwConvParams['group']
+        self.pwConvParams['name'] = 'conv' + params['name'] + '/sep'
+        self.pwConvParams['kernel_size'] = 1
+        self.pwConvParams['pad'] = 0
+        self.pwConvParams['stride'] = 1
+        self.pwBatchNormParams = dict(use_global_stats=params['use_global_stats'],
+                name='conv' + params['name'] + '/sep/bn')
+        self.pwScaleParams = dict(name='conv' + params['name'] + '/sep/scale')
+        self.pwreluParams = dict(name='relu_' + params['name'] + 'sep')
+
+    def attach(self, netspec, bottom):
+        # Depth-wize Convolution Layer
+        conv_dw     = BaseLegoFunction('Convolution', self.dwConvParams).attach(netspec, bottom)
+        bn_dw       = BaseLegoFunction('BatchNorm', self.dwBatchNormParams).attach(netspec, [conv_dw])
+        scale_dw    = BaseLegoFunction('Scale', self.dwScaleParams).attach(netspec, [bn_dw])
+        relu_dw     = BaseLegoFunction('ReLU', self.dwreluParams).attach(netspec, [scale_dw])
+
+        # Point-wise Convolution Layer
+        conv_pw     = BaseLegoFunction('Convolution', self.pwConvParams).attach(netspec, [relu_dw])
+        bn_pw       = BaseLegoFunction('BatchNorm', self.pwBatchNormParams).attach(netspec, [conv_pw])
+        scale_pw    = BaseLegoFunction('Scale', self.pwScaleParams).attach(netspec, [bn_pw])
+        relu_pw     = BaseLegoFunction('ReLU', self.pwreluParams).attach(netspec, [scale_pw])
+        return relu_pw
+
 
 class EltwiseReLULego(BaseLego):
     type = 'EltwiseReLU'

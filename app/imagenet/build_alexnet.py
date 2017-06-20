@@ -12,9 +12,9 @@ import caffe
 import sys
 from argparse import ArgumentParser
 sys.path.append('netbuilder')
-from lego.hybrid import ConvBNReLULego
-from lego.base import BaseLegoFunction
-from tools.complexity import get_complexity
+from netbuilder.lego.hybrid import ConvBNReLULego
+from netbuilder.lego.base import BaseLegoFunction
+from netbuilder.tools.complexity import get_complexity
 
 parser = ArgumentParser(description=""" This script generates imagenet alexnet train_val.prototxt files""")
 parser.add_argument('-o', '--output_folder', help="""Train and Test prototxt will be generated as train.prototxt and test.prototxt""")

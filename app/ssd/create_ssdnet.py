@@ -29,8 +29,8 @@ parser.add_argument('-m', '--main_branch', help="""normal, bottleneck""", requir
 parser.add_argument('-c', '--num_classes', help="""Number of classes in detection dataset""", type=int, default=21)
 
 
-from tools.complexity import get_complexity
-from nets.ssdnet import get_vgg_ssdnet, get_resnet_ssdnet
+from netbuilder.tools.complexity import get_complexity
+from netbuilder.nets.ssdnet import get_vgg_ssdnet, get_resnet_ssdnet
 
 if __name__ == '__main__':
 

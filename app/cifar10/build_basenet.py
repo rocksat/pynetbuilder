@@ -16,7 +16,7 @@ from argparse import ArgumentParser
 sys.path.append('netbuilder')
 
 if __name__ == '__main__':
-    from lego.hybrid import ConvBNReLULego, EltwiseReLULego, ResnetLego
+    from lego.hybrid import ConvBNReLULego, EltwiseReLULego
     from lego.data import ImageDataLego
     # from lego.core import PoolLego, InnerProductLego, SoftmaxWithLossLego
     from lego.base import BaseLegoFunction
