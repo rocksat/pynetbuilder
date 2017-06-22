@@ -1,6 +1,6 @@
 """
 Copyright 2016 Yahoo Inc.
-Licensed under the terms of the 2 clause BSD license. 
+Licensed under the terms of the 2 clause BSD license.
 Please see LICENSE file in the project root for terms.
 """
 
@@ -10,9 +10,9 @@ from caffe import layers as L
 from caffe import params as P
 import caffe
 
-from lego.hybrid import ConvReLULego
-from lego.base import BaseLegoFunction, BaseLego, Config
-from tools.complexity import get_complexity
+from netbuilder.lego.hybrid import ConvReLULego, ConvBNReLULego, DWConvLego
+from netbuilder.lego.base import BaseLegoFunction, BaseLego, Config
+from netbuilder.tools.complexity import get_complexity
 
 '''
     Base class defining the stitch
@@ -110,7 +110,7 @@ class ResNet(BaseNet):
 
 
         '''
-                You should modify these layers in order to experiment with different 
+                You should modify these layers in order to experiment with different
                 architectures specific for detection
         '''
         if not fc_layers:
@@ -143,7 +143,7 @@ class ResNet(BaseNet):
 
 '''
     Class to stitch together VGGNet
-    Some code borrowed from 
+    Some code borrowed from
     https://github.com/weiliu89/caffe/blob/ssd/python/caffe/model_libs.py
 '''
 class VGGNet(BaseNet):
@@ -218,7 +218,7 @@ class VGGNet(BaseNet):
             fc7 = BaseLegoFunction('Convolution', ip_params).attach(netspec, [out6])
             relu_params = dict(name='relu7', in_place=True)
             out7 = BaseLegoFunction('ReLU', relu_params).attach(netspec, [fc7])
-            if dropout:DWConvLego
+            if dropout:
                 drop_params = dict(name='drop6', dropout_param=dict(dropout_ratio=0.5), in_place=True)
                 out7 = BaseLegoFunction('Dropout', drop_params).attach(netspec, [out7])
 
@@ -242,7 +242,7 @@ class VGGNet(BaseNet):
 
 
 class MobileNet(BaseNet):
-    def stitch(self, is_train=True, ):
+    def stitch(self, is_train=True, fc_layers=True):
         netspec = caffe.NetSpec()
         if is_train:
             include = 'train'
@@ -251,9 +251,11 @@ class MobileNet(BaseNet):
         else:
             include = 'test'
             use_global_stats = True
-            batch_size = 1
+            batch_size = 100
 
-        Config.set_default_params('Convolution', 'param', [dict(lr_mult=0, decay_mult=0), dict(lr_mult=0, decay_mult=0)])
+        # Freeze 1st 2 stages and dont update batch norm stats
+        Config.del_default_params('Convolution', 'bias_filler')
+        Config.set_default_params('Convolution', 'param', [dict(lr_mult=0, decay_mult=0)])
 
         # Data layer
         params = dict(name='data', batch_size=1, ntop=2,
@@ -261,10 +263,10 @@ class MobileNet(BaseNet):
                     memory_data_param=dict(batch_size=1, channels=3, height=224, width=224)
                     )
         netspec.data, netspec.label = BaseLegoFunction('MemoryData', params).attach(netspec, [])
-        last = netspec.data
 
         # Conv layers stagesattach(netspec, [netspec.data])
-        params = dict(name='1', num_output=32, kernel_size=3, pad=1, stride=2, use_global_stats=use_global_stats)
+        params = dict(name='1', bias_term=False, num_output=32, kernel_size=3,
+                      pad=1, stride=2, use_global_stats=use_global_stats)
         conv1 = ConvBNReLULego(params).attach(netspec, [netspec.data])
 
         names   = ['2_1', '2_2', '3_1', '3_2', '4_1', '4_2', '5_1', '5_2', '5_3', '5_4', '5_5', '5_6', '6']
@@ -272,15 +274,19 @@ class MobileNet(BaseNet):
         outputs = [64, 128, 128, 256, 256, 512, 512, 512, 512, 512, 512, 1024, 1024]
         strides = [1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2]
 
+        last = conv1
         for stage in range(13):
-            params = dict(name=names[stage], group=groups[stage], num_output=output[stage], 
+            params = dict(name=names[stage], group=groups[stage], num_output=outputs[stage],
                     stride=strides[stage], use_global_stats=use_global_stats)
             last = DWConvLego(params).attach(netspec, [last])
+            if stage == 4:
+                Config.set_default_params('Convolution', 'param', [dict(lr_mult=1, decay_mult=1)])
 
-        pool_params = dict(name='6', pool=P.Pooling.AVE, global_pooling=True, use_global_stats=use_global_stats)
-        pool6 = BaseLegoFunction('Pooling', pool_params).attach(netspec, [last])
+        if fc_layers:
+            pool_params = dict(name='pool_6', pool=P.Pooling.AVE, global_pooling=True, use_global_stats=use_global_stats)
+            pool6 = BaseLegoFunction('Pooling', pool_params).attach(netspec, [last])
 
-        ip_params = dict(name='7', num_output=1000, kernel_size=1)
-        fc7 = BaseLegoFunction('Convolution', ip_params).attach(netspec, [pool6])
-        
+            ip_params = dict(name='fc_7', num_output=1000, kernel_size=1)
+            fc7 = BaseLegoFunction('Convolution', ip_params).attach(netspec, [pool6])
+
         return netspec

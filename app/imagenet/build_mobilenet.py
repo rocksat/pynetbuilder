@@ -14,7 +14,7 @@ from argparse import ArgumentParser
 sys.path.append('netbuilder')
 from netbuilder.lego.hybrid import ConvBNReLULego, DWConvLego
 from netbuilder.lego.base import BaseLegoFunction, Config
-from netbuilder.lego.data import DataLego
+from netbuilder.lego.data import ImageDataLego
 from netbuilder.tools.complexity import get_complexity
 
 parser = ArgumentParser(description=""" This script generates imagenet alexnet train_val.prototxt files""")
@@ -26,7 +26,7 @@ def write_prototxt(is_train, source, output_folder):
     if is_train:
         include = 'train'
         use_global_stats = False
-        batch_size = 64
+        batch_size = 256
     else:
         include = 'test'
         use_global_stats = True
@@ -36,12 +36,14 @@ def write_prototxt(is_train, source, output_folder):
     Config.set_default_params('Convolution', 'param', [dict(lr_mult=1, decay_mult=1)])
 
     # data layer
-    params = dict(name='cifar', source=source , batch_size=batch_size, backend=1,
-                  include=include, mean_file='examples/cifar10/mean.binaryproto')
-    data, label = DataLego(params).attach(netspec)
+    params = dict(name='data', source=source, batch_size=batch_size, include=include,
+                  image_data_param=dict(new_height=256, new_width=256),
+                  transform_param=dict(crop_size=224, scale=0.017, mirror=False,
+                  mean_value=[103.94, 116.78, 123.68]))
+    data, label = ImageDataLego(params).attach(netspec)
 
-    # Conv layers stagesattach(netspec, [netspec.data])
-    params = dict(name='1', num_output=32, kernel_size=3, pad=1, stride=2, use_global_stats=use_global_stats)
+    params = dict(name='1', num_output=32, kernel_size=3, pad=1, stride=2, bias_term=False,
+                  use_global_stats=use_global_stats)
     conv1 = ConvBNReLULego(params).attach(netspec, [data])
 
     names   = ['2_1', '2_2', '3_1', '3_2', '4_1', '4_2', '5_1', '5_2', '5_3', '5_4', '5_5', '5_6', '6']
@@ -58,13 +60,14 @@ def write_prototxt(is_train, source, output_folder):
     pool_params = dict(name='pool_6', pool=P.Pooling.AVE, global_pooling=True)
     pool6 = BaseLegoFunction('Pooling', pool_params).attach(netspec, [last])
 
-    ip_params = dict(name='fc_7', num_output=10, kernel_size=1)
+    ip_params = dict(name='fc_7', num_output=1000, kernel_size=1)
     fc7 = BaseLegoFunction('Convolution', ip_params).attach(netspec, [pool6])
 
     smax_loss = BaseLegoFunction('SoftmaxWithLoss', dict(name='loss')).attach(netspec, [fc7, label])
 
     if include == 'test':
-        BaseLegoFunction('Accuracy', dict(name='accuracy')).attach(netspec, [fc7, label])
+        BaseLegoFunction('Accuracy', dict(name='top1/acc', accuracy_param=dict(top_k=1))).attach(netspec, [fc7, label])
+        BaseLegoFunction('Accuracy', dict(name='top5/acc', accuracy_param=dict(top_k=5))).attach(netspec, [fc7, label])
     filename = 'train.prototxt' if is_train else 'test.prototxt'
     filepath = output_folder + '/' + filename
     fp = open(filepath, 'w')
@@ -73,8 +76,8 @@ def write_prototxt(is_train, source, output_folder):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    write_prototxt(True, 'examples/cifar10/cifar10_train_lmdb', args.output_folder)
-    write_prototxt(False, 'examples/cifar10/cifar10_test_lmdb', args.output_folder)
+    write_prototxt(True, 'data/ilsvrc12/img_train.txt', args.output_folder)
+    write_prototxt(False, 'data/ilsvrc12/img_val.txt', args.output_folder)
 
     # Also print out the network complexity
     # filepath = args.output_folder + '/test.prototxt'

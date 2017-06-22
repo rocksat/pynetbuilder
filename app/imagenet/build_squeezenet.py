@@ -63,13 +63,4 @@ if __name__ == '__main__':
     smax_loss = BaseLegoFunction('SoftmaxWithLoss', dict(name='loss')).attach(netspec, [pool10, label])
 
     print netspec.to_proto()
-
-
-
-
-
-
-
-
-
-
+    

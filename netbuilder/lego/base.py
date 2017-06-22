@@ -140,3 +140,9 @@ class Config(object):
         assert param in Config._default_params[layer]
         Config._default_params[layer][param] = val
 
+    @classmethod
+    def del_default_params(self, layer, param):
+        if len(Config._default_params) == 0:
+            execfile("./config/default.params", Config._default_params)
+        assert layer in Config._default_params
+        Config._default_params[layer].pop(param, None)

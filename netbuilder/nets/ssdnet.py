@@ -1,6 +1,6 @@
 """
 Copyright 2016 Yahoo Inc.
-Licensed under the terms of the 2 clause BSD license. 
+Licensed under the terms of the 2 clause BSD license.
 Please see LICENSE file in the project root for terms.
 """
 
@@ -80,8 +80,8 @@ def get_vgg_ssdnet(is_train=True):
 
 
 def add_extra_layers_resnet(netspec, last, params):
-    from lego.hybrid import ShortcutLego, ConvBNReLULego
 
+    from lego.hybrid import ShortcutLego, ConvBNReLULego
     from lego.base import BaseLegoFunction
 
     blocks = params['extra_blocks']
@@ -157,6 +157,67 @@ def get_resnet_ssdnet(params):
     print max_sizes
     print aspect_ratios
     print normalizations
+    assemble_params = dict(mbox_source_layers=mbox_source_layers,
+                           normalizations=normalizations,
+                           aspect_ratios=aspect_ratios,
+                           num_classes=num_classes,
+                           min_sizes=min_sizes,
+                           max_sizes=max_sizes, is_train=is_train)
+    MBoxAssembleLego(assemble_params).attach(netspec, [netspec['label']])
+
+    return netspec
+
+
+def add_extra_layers_mobilenet(netspec, last):
+    from lego.hybrid import ConvBNReLULego
+    from lego.base import BaseLegoFunction
+
+    use_relu = True
+    for i in xrange(7, 10):
+        name = str(i) + '_1'
+        num_output = 256 if i == 7 else 128
+        params = dict(name=name, kernel_size=1, num_output=num_output,
+                      pad=0, stride=1, use_global_stats=True)
+        conv1 = ConvBNReLULego(params).attach(netspec, [last])
+
+        name = str(i) + '_2'
+        num_output = 512 if i == 7 else 256
+        params = dict(name=name, kernel_size=3, num_output=num_output,
+                      pad=1, stride=2, use_global_stats=True)
+        last = ConvBNReLULego(params).attach(netspec, [conv1])
+
+    # Add global pooling layer.
+    pool_param = dict(name='pool_10', pool=P.Pooling.AVE, global_pooling=True)
+    pool = BaseLegoFunction('Pooling', pool_param).attach(netspec, [last])
+
+    return netspec
+
+
+def get_mobilenet_ssdnet(is_train=True):
+
+    from lego.ssd import MBoxUnitLego, MBoxAssembleLego
+    from lego.base import BaseLegoFunction
+    from imagenet import MobileNet
+    import math
+    netspec = MobileNet().stitch(fc_layers=False)
+
+    add_extra_layers_mobilenet(netspec, netspec['relu_6/sep'])
+    num_classes = 21
+    min_dim = 300
+    mbox_source_layers = ['relu_5_4/sep', 'relu_5_6/sep', 'relu_7_2', 'relu_8_2', 'relu_9_2', 'pool_10']
+    min_ratio = 20
+    max_ratio = 95
+    step = int(math.floor((max_ratio - min_ratio) / (len(mbox_source_layers) - 2)))
+    min_sizes = []
+    max_sizes = []
+    for ratio in xrange(min_ratio, max_ratio + 1, step):
+        min_sizes.append(min_dim * ratio / 100.)
+        max_sizes.append(min_dim * (ratio + step) / 100.)
+    min_sizes = [min_dim * 10 / 100.] + min_sizes
+    max_sizes = [[]] + max_sizes
+    aspect_ratios = [[2], [2, 3], [2, 3], [2, 3], [2, 3], [2, 3]]
+    normalizations = [20, -1, -1, -1, -1, -1]
+
     assemble_params = dict(mbox_source_layers=mbox_source_layers,
                            normalizations=normalizations,
                            aspect_ratios=aspect_ratios,

@@ -258,6 +258,8 @@ class MBoxAssembleLego(BaseLego):
         train_on_diff_gt = True
         normalization_mode = P.Loss.VALID
         code_type = P.PriorBox.CENTER_SIZE
+        ignore_cross_boundary_bbox = False
+        mining_type = P.MultiBoxLoss.MAX_NEGATIVE
         neg_pos_ratio = 3.
         loc_weight = (neg_pos_ratio + 1.) / 4.
         multibox_loss_param = {
@@ -271,10 +273,11 @@ class MBoxAssembleLego(BaseLego):
             'use_prior_for_matching': True,
             'background_label_id': background_label_id,
             'use_difficult_gt': train_on_diff_gt,
-            'do_neg_mining': True,
+            'mining_type': mining_type,
             'neg_pos_ratio': neg_pos_ratio,
             'neg_overlap': 0.5,
             'code_type': code_type,
+            'ignore_cross_boundary_bbox': ignore_cross_boundary_bbox,
             }
         loss_param = {
             'normalization': normalization_mode,
@@ -292,11 +295,11 @@ class MBoxAssembleLego(BaseLego):
             # parameters for generating detection output.
             det_out_param = {
                 'num_classes': num_classes,
-                'share_location': True,
-                'background_label_id': 0,
+                'share_location': share_location,
+                'background_label_id': background_label_id,
                 'nms_param': {'nms_threshold': 0.45, 'top_k': 400},
                 'save_output_param': {
-                    'output_directory': "./models/voc2007/resnet_36_with4k_inception_trick/expt1/detection/",
+                    'output_directory': "/home/asgdemo/Workspace/data/VOCdevkit/results/VOC2007/SSD_300x300/Main",
                     'output_name_prefix': "comp4_det_test_",
                     'output_format': "VOC",
                     'label_map_file': "data/VOC0712/labelmap_voc.prototxt",
@@ -332,5 +335,3 @@ class MBoxAssembleLego(BaseLego):
             netspec.detection_eval = L.DetectionEvaluate(netspec.detection_out, netspec.label,
                 detection_evaluate_param=det_eval_param,
                 include=dict(phase=caffe_pb2.Phase.Value('TEST')))
-
-

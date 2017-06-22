@@ -1,4 +1,3 @@
-name: "CIFAR10_MobileNet"
 layer {
   name: "cifar"
   type: "Data"
@@ -13,23 +12,6 @@ layer {
   data_param {
     source: "examples/cifar10/cifar10_train_lmdb"
     batch_size: 64
-    backend: LMDB
-  }
-}
-layer {
-  name: "cifar"
-  type: "Data"
-  top: "data"
-  top: "label"
-  include {
-    phase: TEST
-  }
-  transform_param {
-    mean_file: "examples/cifar10/mean.binaryproto"
-  }
-  data_param {
-    source: "examples/cifar10/cifar10_test_lmdb"
-    batch_size: 100
     backend: LMDB
   }
 }
@@ -97,10 +79,10 @@ layer {
   top: "conv_1"
 }
 layer {
-  name: "conv2_1/dw"
+  name: "conv_2_1/dw"
   type: "Convolution"
   bottom: "conv_1"
-  top: "conv2_1/dw"
+  top: "conv_2_1/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -126,10 +108,10 @@ layer {
   }
 }
 layer {
-  name: "conv2_1/dw/bn"
+  name: "conv_2_1/dw/bn"
   type: "BatchNorm"
-  bottom: "conv2_1/dw"
-  top: "conv2_1/dw"
+  bottom: "conv_2_1/dw"
+  top: "conv_2_1/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -147,25 +129,25 @@ layer {
   }
 }
 layer {
-  name: "conv2_1/dw/scale"
+  name: "conv_2_1/dw/scale"
   type: "Scale"
-  bottom: "conv2_1/dw"
-  top: "conv2_1/dw"
+  bottom: "conv_2_1/dw"
+  top: "conv_2_1/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu2_1/dw"
+  name: "relu_2_1/dw"
   type: "ReLU"
-  bottom: "conv2_1/dw"
-  top: "conv2_1/dw"
+  bottom: "conv_2_1/dw"
+  top: "conv_2_1/dw"
 }
 layer {
-  name: "conv2_1/sep"
+  name: "conv_2_1/sep"
   type: "Convolution"
-  bottom: "conv2_1/dw"
-  top: "conv2_1/sep"
+  bottom: "conv_2_1/dw"
+  top: "conv_2_1/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -189,10 +171,10 @@ layer {
   }
 }
 layer {
-  name: "conv2_1/sep/bn"
+  name: "conv_2_1/sep/bn"
   type: "BatchNorm"
-  bottom: "conv2_1/sep"
-  top: "conv2_1/sep"
+  bottom: "conv_2_1/sep"
+  top: "conv_2_1/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -210,25 +192,25 @@ layer {
   }
 }
 layer {
-  name: "conv2_1/sep/scale"
+  name: "conv_2_1/sep/scale"
   type: "Scale"
-  bottom: "conv2_1/sep"
-  top: "conv2_1/sep"
+  bottom: "conv_2_1/sep"
+  top: "conv_2_1/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_2_1sep"
+  name: "relu_2_1/sep"
   type: "ReLU"
-  bottom: "conv2_1/sep"
-  top: "conv2_1/sep"
+  bottom: "conv_2_1/sep"
+  top: "conv_2_1/sep"
 }
 layer {
-  name: "conv2_2/dw"
+  name: "conv_2_2/dw"
   type: "Convolution"
-  bottom: "conv2_1/sep"
-  top: "conv2_2/dw"
+  bottom: "conv_2_1/sep"
+  top: "conv_2_2/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -254,10 +236,10 @@ layer {
   }
 }
 layer {
-  name: "conv2_2/dw/bn"
+  name: "conv_2_2/dw/bn"
   type: "BatchNorm"
-  bottom: "conv2_2/dw"
-  top: "conv2_2/dw"
+  bottom: "conv_2_2/dw"
+  top: "conv_2_2/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -275,25 +257,25 @@ layer {
   }
 }
 layer {
-  name: "conv2_2/dw/scale"
+  name: "conv_2_2/dw/scale"
   type: "Scale"
-  bottom: "conv2_2/dw"
-  top: "conv2_2/dw"
+  bottom: "conv_2_2/dw"
+  top: "conv_2_2/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu2_2/dw"
+  name: "relu_2_2/dw"
   type: "ReLU"
-  bottom: "conv2_2/dw"
-  top: "conv2_2/dw"
+  bottom: "conv_2_2/dw"
+  top: "conv_2_2/dw"
 }
 layer {
-  name: "conv2_2/sep"
+  name: "conv_2_2/sep"
   type: "Convolution"
-  bottom: "conv2_2/dw"
-  top: "conv2_2/sep"
+  bottom: "conv_2_2/dw"
+  top: "conv_2_2/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -317,10 +299,10 @@ layer {
   }
 }
 layer {
-  name: "conv2_2/sep/bn"
+  name: "conv_2_2/sep/bn"
   type: "BatchNorm"
-  bottom: "conv2_2/sep"
-  top: "conv2_2/sep"
+  bottom: "conv_2_2/sep"
+  top: "conv_2_2/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -338,25 +320,25 @@ layer {
   }
 }
 layer {
-  name: "conv2_2/sep/scale"
+  name: "conv_2_2/sep/scale"
   type: "Scale"
-  bottom: "conv2_2/sep"
-  top: "conv2_2/sep"
+  bottom: "conv_2_2/sep"
+  top: "conv_2_2/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_2_2sep"
+  name: "relu_2_2/sep"
   type: "ReLU"
-  bottom: "conv2_2/sep"
-  top: "conv2_2/sep"
+  bottom: "conv_2_2/sep"
+  top: "conv_2_2/sep"
 }
 layer {
-  name: "conv3_1/dw"
+  name: "conv_3_1/dw"
   type: "Convolution"
-  bottom: "conv2_2/sep"
-  top: "conv3_1/dw"
+  bottom: "conv_2_2/sep"
+  top: "conv_3_1/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -382,10 +364,10 @@ layer {
   }
 }
 layer {
-  name: "conv3_1/dw/bn"
+  name: "conv_3_1/dw/bn"
   type: "BatchNorm"
-  bottom: "conv3_1/dw"
-  top: "conv3_1/dw"
+  bottom: "conv_3_1/dw"
+  top: "conv_3_1/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -403,25 +385,25 @@ layer {
   }
 }
 layer {
-  name: "conv3_1/dw/scale"
+  name: "conv_3_1/dw/scale"
   type: "Scale"
-  bottom: "conv3_1/dw"
-  top: "conv3_1/dw"
+  bottom: "conv_3_1/dw"
+  top: "conv_3_1/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu3_1/dw"
+  name: "relu_3_1/dw"
   type: "ReLU"
-  bottom: "conv3_1/dw"
-  top: "conv3_1/dw"
+  bottom: "conv_3_1/dw"
+  top: "conv_3_1/dw"
 }
 layer {
-  name: "conv3_1/sep"
+  name: "conv_3_1/sep"
   type: "Convolution"
-  bottom: "conv3_1/dw"
-  top: "conv3_1/sep"
+  bottom: "conv_3_1/dw"
+  top: "conv_3_1/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -445,10 +427,10 @@ layer {
   }
 }
 layer {
-  name: "conv3_1/sep/bn"
+  name: "conv_3_1/sep/bn"
   type: "BatchNorm"
-  bottom: "conv3_1/sep"
-  top: "conv3_1/sep"
+  bottom: "conv_3_1/sep"
+  top: "conv_3_1/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -466,25 +448,25 @@ layer {
   }
 }
 layer {
-  name: "conv3_1/sep/scale"
+  name: "conv_3_1/sep/scale"
   type: "Scale"
-  bottom: "conv3_1/sep"
-  top: "conv3_1/sep"
+  bottom: "conv_3_1/sep"
+  top: "conv_3_1/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_3_1sep"
+  name: "relu_3_1/sep"
   type: "ReLU"
-  bottom: "conv3_1/sep"
-  top: "conv3_1/sep"
+  bottom: "conv_3_1/sep"
+  top: "conv_3_1/sep"
 }
 layer {
-  name: "conv3_2/dw"
+  name: "conv_3_2/dw"
   type: "Convolution"
-  bottom: "conv3_1/sep"
-  top: "conv3_2/dw"
+  bottom: "conv_3_1/sep"
+  top: "conv_3_2/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -510,10 +492,10 @@ layer {
   }
 }
 layer {
-  name: "conv3_2/dw/bn"
+  name: "conv_3_2/dw/bn"
   type: "BatchNorm"
-  bottom: "conv3_2/dw"
-  top: "conv3_2/dw"
+  bottom: "conv_3_2/dw"
+  top: "conv_3_2/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -531,25 +513,25 @@ layer {
   }
 }
 layer {
-  name: "conv3_2/dw/scale"
+  name: "conv_3_2/dw/scale"
   type: "Scale"
-  bottom: "conv3_2/dw"
-  top: "conv3_2/dw"
+  bottom: "conv_3_2/dw"
+  top: "conv_3_2/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu3_2/dw"
+  name: "relu_3_2/dw"
   type: "ReLU"
-  bottom: "conv3_2/dw"
-  top: "conv3_2/dw"
+  bottom: "conv_3_2/dw"
+  top: "conv_3_2/dw"
 }
 layer {
-  name: "conv3_2/sep"
+  name: "conv_3_2/sep"
   type: "Convolution"
-  bottom: "conv3_2/dw"
-  top: "conv3_2/sep"
+  bottom: "conv_3_2/dw"
+  top: "conv_3_2/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -573,10 +555,10 @@ layer {
   }
 }
 layer {
-  name: "conv3_2/sep/bn"
+  name: "conv_3_2/sep/bn"
   type: "BatchNorm"
-  bottom: "conv3_2/sep"
-  top: "conv3_2/sep"
+  bottom: "conv_3_2/sep"
+  top: "conv_3_2/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -594,25 +576,25 @@ layer {
   }
 }
 layer {
-  name: "conv3_2/sep/scale"
+  name: "conv_3_2/sep/scale"
   type: "Scale"
-  bottom: "conv3_2/sep"
-  top: "conv3_2/sep"
+  bottom: "conv_3_2/sep"
+  top: "conv_3_2/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_3_2sep"
+  name: "relu_3_2/sep"
   type: "ReLU"
-  bottom: "conv3_2/sep"
-  top: "conv3_2/sep"
+  bottom: "conv_3_2/sep"
+  top: "conv_3_2/sep"
 }
 layer {
-  name: "conv4_1/dw"
+  name: "conv_4_1/dw"
   type: "Convolution"
-  bottom: "conv3_2/sep"
-  top: "conv4_1/dw"
+  bottom: "conv_3_2/sep"
+  top: "conv_4_1/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -638,10 +620,10 @@ layer {
   }
 }
 layer {
-  name: "conv4_1/dw/bn"
+  name: "conv_4_1/dw/bn"
   type: "BatchNorm"
-  bottom: "conv4_1/dw"
-  top: "conv4_1/dw"
+  bottom: "conv_4_1/dw"
+  top: "conv_4_1/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -659,25 +641,25 @@ layer {
   }
 }
 layer {
-  name: "conv4_1/dw/scale"
+  name: "conv_4_1/dw/scale"
   type: "Scale"
-  bottom: "conv4_1/dw"
-  top: "conv4_1/dw"
+  bottom: "conv_4_1/dw"
+  top: "conv_4_1/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu4_1/dw"
+  name: "relu_4_1/dw"
   type: "ReLU"
-  bottom: "conv4_1/dw"
-  top: "conv4_1/dw"
+  bottom: "conv_4_1/dw"
+  top: "conv_4_1/dw"
 }
 layer {
-  name: "conv4_1/sep"
+  name: "conv_4_1/sep"
   type: "Convolution"
-  bottom: "conv4_1/dw"
-  top: "conv4_1/sep"
+  bottom: "conv_4_1/dw"
+  top: "conv_4_1/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -701,10 +683,10 @@ layer {
   }
 }
 layer {
-  name: "conv4_1/sep/bn"
+  name: "conv_4_1/sep/bn"
   type: "BatchNorm"
-  bottom: "conv4_1/sep"
-  top: "conv4_1/sep"
+  bottom: "conv_4_1/sep"
+  top: "conv_4_1/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -722,25 +704,25 @@ layer {
   }
 }
 layer {
-  name: "conv4_1/sep/scale"
+  name: "conv_4_1/sep/scale"
   type: "Scale"
-  bottom: "conv4_1/sep"
-  top: "conv4_1/sep"
+  bottom: "conv_4_1/sep"
+  top: "conv_4_1/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_4_1sep"
+  name: "relu_4_1/sep"
   type: "ReLU"
-  bottom: "conv4_1/sep"
-  top: "conv4_1/sep"
+  bottom: "conv_4_1/sep"
+  top: "conv_4_1/sep"
 }
 layer {
-  name: "conv4_2/dw"
+  name: "conv_4_2/dw"
   type: "Convolution"
-  bottom: "conv4_1/sep"
-  top: "conv4_2/dw"
+  bottom: "conv_4_1/sep"
+  top: "conv_4_2/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -766,10 +748,10 @@ layer {
   }
 }
 layer {
-  name: "conv4_2/dw/bn"
+  name: "conv_4_2/dw/bn"
   type: "BatchNorm"
-  bottom: "conv4_2/dw"
-  top: "conv4_2/dw"
+  bottom: "conv_4_2/dw"
+  top: "conv_4_2/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -787,25 +769,25 @@ layer {
   }
 }
 layer {
-  name: "conv4_2/dw/scale"
+  name: "conv_4_2/dw/scale"
   type: "Scale"
-  bottom: "conv4_2/dw"
-  top: "conv4_2/dw"
+  bottom: "conv_4_2/dw"
+  top: "conv_4_2/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu4_2/dw"
+  name: "relu_4_2/dw"
   type: "ReLU"
-  bottom: "conv4_2/dw"
-  top: "conv4_2/dw"
+  bottom: "conv_4_2/dw"
+  top: "conv_4_2/dw"
 }
 layer {
-  name: "conv4_2/sep"
+  name: "conv_4_2/sep"
   type: "Convolution"
-  bottom: "conv4_2/dw"
-  top: "conv4_2/sep"
+  bottom: "conv_4_2/dw"
+  top: "conv_4_2/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -829,10 +811,10 @@ layer {
   }
 }
 layer {
-  name: "conv4_2/sep/bn"
+  name: "conv_4_2/sep/bn"
   type: "BatchNorm"
-  bottom: "conv4_2/sep"
-  top: "conv4_2/sep"
+  bottom: "conv_4_2/sep"
+  top: "conv_4_2/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -850,25 +832,25 @@ layer {
   }
 }
 layer {
-  name: "conv4_2/sep/scale"
+  name: "conv_4_2/sep/scale"
   type: "Scale"
-  bottom: "conv4_2/sep"
-  top: "conv4_2/sep"
+  bottom: "conv_4_2/sep"
+  top: "conv_4_2/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_4_2sep"
+  name: "relu_4_2/sep"
   type: "ReLU"
-  bottom: "conv4_2/sep"
-  top: "conv4_2/sep"
+  bottom: "conv_4_2/sep"
+  top: "conv_4_2/sep"
 }
 layer {
-  name: "conv5_1/dw"
+  name: "conv_5_1/dw"
   type: "Convolution"
-  bottom: "conv4_2/sep"
-  top: "conv5_1/dw"
+  bottom: "conv_4_2/sep"
+  top: "conv_5_1/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -894,10 +876,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_1/dw/bn"
+  name: "conv_5_1/dw/bn"
   type: "BatchNorm"
-  bottom: "conv5_1/dw"
-  top: "conv5_1/dw"
+  bottom: "conv_5_1/dw"
+  top: "conv_5_1/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -915,25 +897,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_1/dw/scale"
+  name: "conv_5_1/dw/scale"
   type: "Scale"
-  bottom: "conv5_1/dw"
-  top: "conv5_1/dw"
+  bottom: "conv_5_1/dw"
+  top: "conv_5_1/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu5_1/dw"
+  name: "relu_5_1/dw"
   type: "ReLU"
-  bottom: "conv5_1/dw"
-  top: "conv5_1/dw"
+  bottom: "conv_5_1/dw"
+  top: "conv_5_1/dw"
 }
 layer {
-  name: "conv5_1/sep"
+  name: "conv_5_1/sep"
   type: "Convolution"
-  bottom: "conv5_1/dw"
-  top: "conv5_1/sep"
+  bottom: "conv_5_1/dw"
+  top: "conv_5_1/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -957,10 +939,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_1/sep/bn"
+  name: "conv_5_1/sep/bn"
   type: "BatchNorm"
-  bottom: "conv5_1/sep"
-  top: "conv5_1/sep"
+  bottom: "conv_5_1/sep"
+  top: "conv_5_1/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -978,25 +960,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_1/sep/scale"
+  name: "conv_5_1/sep/scale"
   type: "Scale"
-  bottom: "conv5_1/sep"
-  top: "conv5_1/sep"
+  bottom: "conv_5_1/sep"
+  top: "conv_5_1/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_5_1sep"
+  name: "relu_5_1/sep"
   type: "ReLU"
-  bottom: "conv5_1/sep"
-  top: "conv5_1/sep"
+  bottom: "conv_5_1/sep"
+  top: "conv_5_1/sep"
 }
 layer {
-  name: "conv5_2/dw"
+  name: "conv_5_2/dw"
   type: "Convolution"
-  bottom: "conv5_1/sep"
-  top: "conv5_2/dw"
+  bottom: "conv_5_1/sep"
+  top: "conv_5_2/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1022,10 +1004,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_2/dw/bn"
+  name: "conv_5_2/dw/bn"
   type: "BatchNorm"
-  bottom: "conv5_2/dw"
-  top: "conv5_2/dw"
+  bottom: "conv_5_2/dw"
+  top: "conv_5_2/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1043,25 +1025,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_2/dw/scale"
+  name: "conv_5_2/dw/scale"
   type: "Scale"
-  bottom: "conv5_2/dw"
-  top: "conv5_2/dw"
+  bottom: "conv_5_2/dw"
+  top: "conv_5_2/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu5_2/dw"
+  name: "relu_5_2/dw"
   type: "ReLU"
-  bottom: "conv5_2/dw"
-  top: "conv5_2/dw"
+  bottom: "conv_5_2/dw"
+  top: "conv_5_2/dw"
 }
 layer {
-  name: "conv5_2/sep"
+  name: "conv_5_2/sep"
   type: "Convolution"
-  bottom: "conv5_2/dw"
-  top: "conv5_2/sep"
+  bottom: "conv_5_2/dw"
+  top: "conv_5_2/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1085,10 +1067,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_2/sep/bn"
+  name: "conv_5_2/sep/bn"
   type: "BatchNorm"
-  bottom: "conv5_2/sep"
-  top: "conv5_2/sep"
+  bottom: "conv_5_2/sep"
+  top: "conv_5_2/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1106,25 +1088,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_2/sep/scale"
+  name: "conv_5_2/sep/scale"
   type: "Scale"
-  bottom: "conv5_2/sep"
-  top: "conv5_2/sep"
+  bottom: "conv_5_2/sep"
+  top: "conv_5_2/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_5_2sep"
+  name: "relu_5_2/sep"
   type: "ReLU"
-  bottom: "conv5_2/sep"
-  top: "conv5_2/sep"
+  bottom: "conv_5_2/sep"
+  top: "conv_5_2/sep"
 }
 layer {
-  name: "conv5_3/dw"
+  name: "conv_5_3/dw"
   type: "Convolution"
-  bottom: "conv5_2/sep"
-  top: "conv5_3/dw"
+  bottom: "conv_5_2/sep"
+  top: "conv_5_3/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1150,10 +1132,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_3/dw/bn"
+  name: "conv_5_3/dw/bn"
   type: "BatchNorm"
-  bottom: "conv5_3/dw"
-  top: "conv5_3/dw"
+  bottom: "conv_5_3/dw"
+  top: "conv_5_3/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1171,25 +1153,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_3/dw/scale"
+  name: "conv_5_3/dw/scale"
   type: "Scale"
-  bottom: "conv5_3/dw"
-  top: "conv5_3/dw"
+  bottom: "conv_5_3/dw"
+  top: "conv_5_3/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu5_3/dw"
+  name: "relu_5_3/dw"
   type: "ReLU"
-  bottom: "conv5_3/dw"
-  top: "conv5_3/dw"
+  bottom: "conv_5_3/dw"
+  top: "conv_5_3/dw"
 }
 layer {
-  name: "conv5_3/sep"
+  name: "conv_5_3/sep"
   type: "Convolution"
-  bottom: "conv5_3/dw"
-  top: "conv5_3/sep"
+  bottom: "conv_5_3/dw"
+  top: "conv_5_3/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1213,10 +1195,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_3/sep/bn"
+  name: "conv_5_3/sep/bn"
   type: "BatchNorm"
-  bottom: "conv5_3/sep"
-  top: "conv5_3/sep"
+  bottom: "conv_5_3/sep"
+  top: "conv_5_3/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1234,25 +1216,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_3/sep/scale"
+  name: "conv_5_3/sep/scale"
   type: "Scale"
-  bottom: "conv5_3/sep"
-  top: "conv5_3/sep"
+  bottom: "conv_5_3/sep"
+  top: "conv_5_3/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_5_3sep"
+  name: "relu_5_3/sep"
   type: "ReLU"
-  bottom: "conv5_3/sep"
-  top: "conv5_3/sep"
+  bottom: "conv_5_3/sep"
+  top: "conv_5_3/sep"
 }
 layer {
-  name: "conv5_4/dw"
+  name: "conv_5_4/dw"
   type: "Convolution"
-  bottom: "conv5_3/sep"
-  top: "conv5_4/dw"
+  bottom: "conv_5_3/sep"
+  top: "conv_5_4/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1278,10 +1260,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_4/dw/bn"
+  name: "conv_5_4/dw/bn"
   type: "BatchNorm"
-  bottom: "conv5_4/dw"
-  top: "conv5_4/dw"
+  bottom: "conv_5_4/dw"
+  top: "conv_5_4/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1299,25 +1281,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_4/dw/scale"
+  name: "conv_5_4/dw/scale"
   type: "Scale"
-  bottom: "conv5_4/dw"
-  top: "conv5_4/dw"
+  bottom: "conv_5_4/dw"
+  top: "conv_5_4/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu5_4/dw"
+  name: "relu_5_4/dw"
   type: "ReLU"
-  bottom: "conv5_4/dw"
-  top: "conv5_4/dw"
+  bottom: "conv_5_4/dw"
+  top: "conv_5_4/dw"
 }
 layer {
-  name: "conv5_4/sep"
+  name: "conv_5_4/sep"
   type: "Convolution"
-  bottom: "conv5_4/dw"
-  top: "conv5_4/sep"
+  bottom: "conv_5_4/dw"
+  top: "conv_5_4/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1341,10 +1323,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_4/sep/bn"
+  name: "conv_5_4/sep/bn"
   type: "BatchNorm"
-  bottom: "conv5_4/sep"
-  top: "conv5_4/sep"
+  bottom: "conv_5_4/sep"
+  top: "conv_5_4/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1362,25 +1344,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_4/sep/scale"
+  name: "conv_5_4/sep/scale"
   type: "Scale"
-  bottom: "conv5_4/sep"
-  top: "conv5_4/sep"
+  bottom: "conv_5_4/sep"
+  top: "conv_5_4/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_5_4sep"
+  name: "relu_5_4/sep"
   type: "ReLU"
-  bottom: "conv5_4/sep"
-  top: "conv5_4/sep"
+  bottom: "conv_5_4/sep"
+  top: "conv_5_4/sep"
 }
 layer {
-  name: "conv5_5/dw"
+  name: "conv_5_5/dw"
   type: "Convolution"
-  bottom: "conv5_4/sep"
-  top: "conv5_5/dw"
+  bottom: "conv_5_4/sep"
+  top: "conv_5_5/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1406,10 +1388,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_5/dw/bn"
+  name: "conv_5_5/dw/bn"
   type: "BatchNorm"
-  bottom: "conv5_5/dw"
-  top: "conv5_5/dw"
+  bottom: "conv_5_5/dw"
+  top: "conv_5_5/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1427,25 +1409,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_5/dw/scale"
+  name: "conv_5_5/dw/scale"
   type: "Scale"
-  bottom: "conv5_5/dw"
-  top: "conv5_5/dw"
+  bottom: "conv_5_5/dw"
+  top: "conv_5_5/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu5_5/dw"
+  name: "relu_5_5/dw"
   type: "ReLU"
-  bottom: "conv5_5/dw"
-  top: "conv5_5/dw"
+  bottom: "conv_5_5/dw"
+  top: "conv_5_5/dw"
 }
 layer {
-  name: "conv5_5/sep"
+  name: "conv_5_5/sep"
   type: "Convolution"
-  bottom: "conv5_5/dw"
-  top: "conv5_5/sep"
+  bottom: "conv_5_5/dw"
+  top: "conv_5_5/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1469,10 +1451,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_5/sep/bn"
+  name: "conv_5_5/sep/bn"
   type: "BatchNorm"
-  bottom: "conv5_5/sep"
-  top: "conv5_5/sep"
+  bottom: "conv_5_5/sep"
+  top: "conv_5_5/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1490,25 +1472,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_5/sep/scale"
+  name: "conv_5_5/sep/scale"
   type: "Scale"
-  bottom: "conv5_5/sep"
-  top: "conv5_5/sep"
+  bottom: "conv_5_5/sep"
+  top: "conv_5_5/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_5_5sep"
+  name: "relu_5_5/sep"
   type: "ReLU"
-  bottom: "conv5_5/sep"
-  top: "conv5_5/sep"
+  bottom: "conv_5_5/sep"
+  top: "conv_5_5/sep"
 }
 layer {
-  name: "conv5_6/dw"
+  name: "conv_5_6/dw"
   type: "Convolution"
-  bottom: "conv5_5/sep"
-  top: "conv5_6/dw"
+  bottom: "conv_5_5/sep"
+  top: "conv_5_6/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1534,10 +1516,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_6/dw/bn"
+  name: "conv_5_6/dw/bn"
   type: "BatchNorm"
-  bottom: "conv5_6/dw"
-  top: "conv5_6/dw"
+  bottom: "conv_5_6/dw"
+  top: "conv_5_6/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1555,25 +1537,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_6/dw/scale"
+  name: "conv_5_6/dw/scale"
   type: "Scale"
-  bottom: "conv5_6/dw"
-  top: "conv5_6/dw"
+  bottom: "conv_5_6/dw"
+  top: "conv_5_6/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu5_6/dw"
+  name: "relu_5_6/dw"
   type: "ReLU"
-  bottom: "conv5_6/dw"
-  top: "conv5_6/dw"
+  bottom: "conv_5_6/dw"
+  top: "conv_5_6/dw"
 }
 layer {
-  name: "conv5_6/sep"
+  name: "conv_5_6/sep"
   type: "Convolution"
-  bottom: "conv5_6/dw"
-  top: "conv5_6/sep"
+  bottom: "conv_5_6/dw"
+  top: "conv_5_6/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1597,10 +1579,10 @@ layer {
   }
 }
 layer {
-  name: "conv5_6/sep/bn"
+  name: "conv_5_6/sep/bn"
   type: "BatchNorm"
-  bottom: "conv5_6/sep"
-  top: "conv5_6/sep"
+  bottom: "conv_5_6/sep"
+  top: "conv_5_6/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1618,25 +1600,25 @@ layer {
   }
 }
 layer {
-  name: "conv5_6/sep/scale"
+  name: "conv_5_6/sep/scale"
   type: "Scale"
-  bottom: "conv5_6/sep"
-  top: "conv5_6/sep"
+  bottom: "conv_5_6/sep"
+  top: "conv_5_6/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_5_6sep"
+  name: "relu_5_6/sep"
   type: "ReLU"
-  bottom: "conv5_6/sep"
-  top: "conv5_6/sep"
+  bottom: "conv_5_6/sep"
+  top: "conv_5_6/sep"
 }
 layer {
-  name: "conv6/dw"
+  name: "conv_6/dw"
   type: "Convolution"
-  bottom: "conv5_6/sep"
-  top: "conv6/dw"
+  bottom: "conv_5_6/sep"
+  top: "conv_6/dw"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1662,10 +1644,10 @@ layer {
   }
 }
 layer {
-  name: "conv6/dw/bn"
+  name: "conv_6/dw/bn"
   type: "BatchNorm"
-  bottom: "conv6/dw"
-  top: "conv6/dw"
+  bottom: "conv_6/dw"
+  top: "conv_6/dw"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1683,25 +1665,25 @@ layer {
   }
 }
 layer {
-  name: "conv6/dw/scale"
+  name: "conv_6/dw/scale"
   type: "Scale"
-  bottom: "conv6/dw"
-  top: "conv6/dw"
+  bottom: "conv_6/dw"
+  top: "conv_6/dw"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu6/dw"
+  name: "relu_6/dw"
   type: "ReLU"
-  bottom: "conv6/dw"
-  top: "conv6/dw"
+  bottom: "conv_6/dw"
+  top: "conv_6/dw"
 }
 layer {
-  name: "conv6/sep"
+  name: "conv_6/sep"
   type: "Convolution"
-  bottom: "conv6/dw"
-  top: "conv6/sep"
+  bottom: "conv_6/dw"
+  top: "conv_6/sep"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1725,10 +1707,10 @@ layer {
   }
 }
 layer {
-  name: "conv6/sep/bn"
+  name: "conv_6/sep/bn"
   type: "BatchNorm"
-  bottom: "conv6/sep"
-  top: "conv6/sep"
+  bottom: "conv_6/sep"
+  top: "conv_6/sep"
   param {
     lr_mult: 0.0
     decay_mult: 0.0
@@ -1746,35 +1728,35 @@ layer {
   }
 }
 layer {
-  name: "conv6/sep/scale"
+  name: "conv_6/sep/scale"
   type: "Scale"
-  bottom: "conv6/sep"
-  top: "conv6/sep"
+  bottom: "conv_6/sep"
+  top: "conv_6/sep"
   scale_param {
     bias_term: true
   }
 }
 layer {
-  name: "relu_6sep"
+  name: "relu_6/sep"
   type: "ReLU"
-  bottom: "conv6/sep"
-  top: "conv6/sep"
+  bottom: "conv_6/sep"
+  top: "conv_6/sep"
 }
 layer {
-  name: "pool6"
+  name: "pool_6"
   type: "Pooling"
-  bottom: "conv6/sep"
-  top: "pool6"
+  bottom: "conv_6/sep"
+  top: "pool_6"
   pooling_param {
     pool: AVE
     global_pooling: true
   }
 }
 layer {
-  name: "fc7"
+  name: "fc_7"
   type: "Convolution"
-  bottom: "pool6"
-  top: "fc7"
+  bottom: "pool_6"
+  top: "fc_7"
   param {
     lr_mult: 1.0
     decay_mult: 1.0
@@ -1784,7 +1766,7 @@ layer {
     decay_mult: 0.0
   }
   convolution_param {
-    num_output: 1000
+    num_output: 10
     kernel_size: 1
     weight_filler {
       type: "msra"
@@ -1798,18 +1780,8 @@ layer {
 layer {
   name: "loss"
   type: "SoftmaxWithLoss"
-  bottom: "fc7"
+  bottom: "fc_7"
   bottom: "label"
   top: "loss"
-}
-layer {
-  name: "accuracy"
-  type: "Accuracy"
-  bottom: "fc7"
-  bottom: "label"
-  top: "accuracy"
-  include {
-    phase: TEST
-  }
 }
 

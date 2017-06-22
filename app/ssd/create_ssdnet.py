@@ -14,7 +14,7 @@ from argparse import ArgumentParser
 
 sys.path.append('netbuilder')
 parser = ArgumentParser(description=""" This script generates ssd vggnet train_val.prototxt files""")
-parser.add_argument('-t', '--type', help="""Resnet or VGGnet""")
+parser.add_argument('-t', '--type', help="""Resnet, VGGnet or MobileNet""")
 parser.add_argument('-o', '--output_folder', help="""Train and Test prototxt will be generated as train.prototxt and test.prototxt""")
 parser.add_argument('-n', '--num_output_stage1', help="""Number of filters in stage 1 of resnet""", type=int, default=128)
 parser.add_argument('--mbox_source_layers', nargs='+', help="""Names of layers where detection heads will be attached""")
@@ -30,7 +30,7 @@ parser.add_argument('-c', '--num_classes', help="""Number of classes in detectio
 
 
 from netbuilder.tools.complexity import get_complexity
-from netbuilder.nets.ssdnet import get_vgg_ssdnet, get_resnet_ssdnet
+from netbuilder.nets.ssdnet import get_vgg_ssdnet, get_resnet_ssdnet, get_mobilenet_ssdnet
 
 if __name__ == '__main__':
 
@@ -51,11 +51,12 @@ if __name__ == '__main__':
     print args.type
     if args.type == 'VGG':
         netspec = get_vgg_ssdnet(is_train=True)
+    elif args.type == 'MOBILE':
+        netspec = get_mobilenet_ssdnet(is_train=True)
     else:
         res_params['is_train'] = True
         netspec = get_resnet_ssdnet(res_params)
 
-    from tools.complexity import get_complexity
     params, flops = get_complexity(netspec=netspec)
     print 'Number of params: ', (1.0 * params) / 1000000.0, ' Million'
     print 'Number of flops: ', (1.0 * flops) / 1000000.0, ' Million'
@@ -66,6 +67,8 @@ if __name__ == '__main__':
 
     if args.type == 'VGG':
         netspec = get_vgg_ssdnet(is_train=False)
+    elif args.type == 'MOBILE':
+        netspec = get_mobilenet_ssdnet(is_train=False)
     else:
         res_params['is_train'] = False
         netspec = get_resnet_ssdnet(res_params)

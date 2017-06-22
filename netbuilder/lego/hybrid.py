@@ -24,7 +24,7 @@ class ConvBNReLULego(BaseLego):
         del self.convParams['use_global_stats']
         self.convParams['name'] = 'conv_' + params['name']
         self.batchNormParams = dict(use_global_stats=params['use_global_stats'],
-                  name='bn_' + params['name'])
+                                    name='bn_' + params['name'])
         self.scaleParams = dict(name='scale_' + params['name'])
         self.reluParams = dict(name='relu_' + params['name'])
 
@@ -40,8 +40,8 @@ class ConvReLULego(BaseLego):
         self._required = ['name', 'kernel_size', 'num_output', 'pad', 'stride']
         self._check_required_params(params)
         self.convParams = deepcopy(params)
-        self.convParams['name'] = 'conv' + params['name'] 
-        self.reluParams = dict(name='relu' + params['name'])
+        self.convParams['name'] = 'conv_' + params['name']
+        self.reluParams = dict(name='relu_' + params['name'])
 
     def attach(self, netspec, bottom):
         conv = BaseLegoFunction('Convolution', self.convParams).attach(netspec, bottom)
@@ -59,7 +59,7 @@ class ConvBNLego(BaseLego):
         del self.convParams['use_global_stats']
         self.convParams['name'] = 'conv_' + params['name']
         self.batchNormParams = dict(use_global_stats=params['use_global_stats'],
-                  name='bn_' + params['name'])
+                                    name='bn_' + params['name'])
         self.scaleParams = dict(name='scale_' + params['name'])
 
 
@@ -78,41 +78,43 @@ class DWConvLego(BaseLego):
         # Params for depth-wise convolution layer
         self.dwConvParams = deepcopy(params)
         del self.dwConvParams['use_global_stats']
-        self.dwConvParams['name'] = 'conv' + params['name'] + '/dw'
+        self.dwConvParams['bias_term'] = False
+        self.dwConvParams['name'] = 'conv_' + params['name'] + '/dw'
         self.dwConvParams['num_output'] = params['group']
         self.dwConvParams['engine'] = 1
         self.dwConvParams['kernel_size'] = 3
         self.dwConvParams['pad'] = 1
         self.dwBatchNormParams = dict(use_global_stats=params['use_global_stats'],
-                name='conv' + params['name'] + '/dw/bn')
-        self.dwScaleParams = dict(name='conv' + params['name'] + '/dw/scale')
-        self.dwreluParams = dict(name='relu' + params['name'] + '/dw')
+                                      name='conv_' + params['name'] + '/dw/bn')
+        self.dwScaleParams = dict(name='conv_' + params['name'] + '/dw/scale')
+        self.dwreluParams = dict(name='relu_' + params['name'] + '/dw')
 
         # Params for point-wise convolution layer
         self.pwConvParams = deepcopy(params)
         del self.pwConvParams['use_global_stats']
         del self.pwConvParams['group']
-        self.pwConvParams['name'] = 'conv' + params['name'] + '/sep'
+        self.pwConvParams['bias_term'] = False
+        self.pwConvParams['name'] = 'conv_' + params['name'] + '/sep'
         self.pwConvParams['kernel_size'] = 1
         self.pwConvParams['pad'] = 0
         self.pwConvParams['stride'] = 1
         self.pwBatchNormParams = dict(use_global_stats=params['use_global_stats'],
-                name='conv' + params['name'] + '/sep/bn')
-        self.pwScaleParams = dict(name='conv' + params['name'] + '/sep/scale')
-        self.pwreluParams = dict(name='relu_' + params['name'] + 'sep')
+                                      name='conv_' + params['name'] + '/sep/bn')
+        self.pwScaleParams = dict(name='conv_' + params['name'] + '/sep/scale')
+        self.pwreluParams = dict(name='relu_' + params['name'] + '/sep')
 
     def attach(self, netspec, bottom):
         # Depth-wize Convolution Layer
-        conv_dw     = BaseLegoFunction('Convolution', self.dwConvParams).attach(netspec, bottom)
-        bn_dw       = BaseLegoFunction('BatchNorm', self.dwBatchNormParams).attach(netspec, [conv_dw])
-        scale_dw    = BaseLegoFunction('Scale', self.dwScaleParams).attach(netspec, [bn_dw])
-        relu_dw     = BaseLegoFunction('ReLU', self.dwreluParams).attach(netspec, [scale_dw])
+        conv_dw = BaseLegoFunction('Convolution', self.dwConvParams).attach(netspec, bottom)
+        bn_dw = BaseLegoFunction('BatchNorm', self.dwBatchNormParams).attach(netspec, [conv_dw])
+        scale_dw = BaseLegoFunction('Scale', self.dwScaleParams).attach(netspec, [bn_dw])
+        relu_dw = BaseLegoFunction('ReLU', self.dwreluParams).attach(netspec, [scale_dw])
 
         # Point-wise Convolution Layer
-        conv_pw     = BaseLegoFunction('Convolution', self.pwConvParams).attach(netspec, [relu_dw])
-        bn_pw       = BaseLegoFunction('BatchNorm', self.pwBatchNormParams).attach(netspec, [conv_pw])
-        scale_pw    = BaseLegoFunction('Scale', self.pwScaleParams).attach(netspec, [bn_pw])
-        relu_pw     = BaseLegoFunction('ReLU', self.pwreluParams).attach(netspec, [scale_pw])
+        conv_pw = BaseLegoFunction('Convolution', self.pwConvParams).attach(netspec, [relu_dw])
+        bn_pw = BaseLegoFunction('BatchNorm', self.pwBatchNormParams).attach(netspec, [conv_pw])
+        scale_pw = BaseLegoFunction('Scale', self.pwScaleParams).attach(netspec, [bn_pw])
+        relu_pw = BaseLegoFunction('ReLU', self.pwreluParams).attach(netspec, [scale_pw])
         return relu_pw
 
 
@@ -148,8 +150,8 @@ class FireLego(BaseLego):
         # Squeeze
         name = self.name + '_' + 'squeeze_1by1'
         sq_params = dict(name=name, num_output=self.squeeze_num_output,
-                                 kernel_size=1, pad=0, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                         kernel_size=1, pad=0, stride=1,
+                         use_global_stats=self.use_global_stats)
         sq = ConvBNReLULego(sq_params).attach(netspec, bottom)
 
         stride = 2 if self.downsample  else 1
@@ -157,14 +159,14 @@ class FireLego(BaseLego):
         # expand
         name = self.name + '_' + 'expand_1by1'
         exp1_params = dict(name=name, num_output=self.squeeze_num_output * self.filter_mult,
-                                 kernel_size=1, pad=0, stride=stride,
-                                 use_global_stats=self.use_global_stats)
+                           kernel_size=1, pad=0, stride=stride,
+                           use_global_stats=self.use_global_stats)
         exp1 = ConvBNReLULego(exp1_params).attach(netspec, [sq])
 
         name = self.name + '_' + 'expand_3by3'
         exp2_params = dict(name=name, num_output=self.squeeze_num_output * self.filter_mult,
-                                 kernel_size=3, pad=1, stride=stride,
-                                 use_global_stats=self.use_global_stats)
+                           kernel_size=3, pad=1, stride=stride,
+                           use_global_stats=self.use_global_stats)
         exp2 = ConvBNReLULego(exp2_params).attach(netspec, [sq])
 
         # concat
@@ -187,34 +189,34 @@ class InceptionV1Lego(BaseLego):
         # branch1by1
         name = self.name + '_' + 'br1by1'
         params = dict(name=name, num_output=self.num_outputs[0],
-                                 kernel_size=1, pad=0, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                      kernel_size=1, pad=0, stride=1,
+                      use_global_stats=self.use_global_stats)
         br1by1 = ConvBNReLULego(params).attach(netspec, bottom)
 
         # branch 3by3
         name = self.name + '_' + 'br3by3_reduce'
         params = dict(name=name, num_output=self.num_outputs[1],
-                                 kernel_size=1, pad=0, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                      kernel_size=1, pad=0, stride=1,
+                      use_global_stats=self.use_global_stats)
         br3by3_reduce = ConvBNReLULego(params).attach(netspec, bottom)
 
         name = self.name + '_' + 'br3by3_expand'
         params = dict(name=name, num_output=self.num_outputs[2],
-                                 kernel_size=3, pad=1, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                      kernel_size=3, pad=1, stride=1,
+                      use_global_stats=self.use_global_stats)
         br3by3_expand = ConvBNReLULego(params).attach(netspec, [br3by3_reduce])
 
         # branch 5by5
         name = self.name + '_' + 'br5by5_reduce'
         params = dict(name=name, num_output=self.num_outputs[3],
-                                 kernel_size=1, pad=0, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                      kernel_size=1, pad=0, stride=1,
+                      use_global_stats=self.use_global_stats)
         br5by5_reduce = ConvBNReLULego(params).attach(netspec, bottom)
 
         name = self.name + '_' + 'br5by5_expand'
         params = dict(name=name, num_output=self.num_outputs[4],
-                                 kernel_size=5, pad=2, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                      kernel_size=5, pad=2, stride=1,
+                      use_global_stats=self.use_global_stats)
         br5by5_expand = ConvBNReLULego(params).attach(netspec, [br5by5_reduce])
 
         # branch pool
@@ -224,14 +226,14 @@ class InceptionV1Lego(BaseLego):
 
         name = self.name + '_' + 'pool_expand'
         params = dict(name=name, num_output=self.num_outputs[5],
-                                 kernel_size=1, pad=1, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                      kernel_size=1, pad=1, stride=1,
+                      use_global_stats=self.use_global_stats)
         pool_conv = ConvBNReLULego(params).attach(netspec, [pool])
 
         # concat
         name = self.name + '_' + 'concat'
         concat = BaseLegoFunction('Concat', dict(name=name)).attach(netspec,
-                                [br1by1, br3by3_expand, br5by5_expand, pool_conv ])
+                                  [br1by1, br3by3_expand, br5by5_expand, pool_conv ])
         return concat
 
 
@@ -335,56 +337,56 @@ class ShortcutLego(BaseLego):
             name = self.name + '_branch_3by1a'
             num_output = self.num_output
             br3by1a_params = dict(name=name, num_output=num_output,
-                                 kernel_w=3, kernel_h=1, pad_w=1, stride_w=self.stride, stride_h=1,
-                                 use_global_stats=self.use_global_stats)
+                                  kernel_w=3, kernel_h=1, pad_w=1, stride_w=self.stride, stride_h=1,
+                                  use_global_stats=self.use_global_stats)
             br3by1a = ConvBNReLULego(br3by1a_params).attach(netspec, bottom)
 
             name = self.name + '_branch_1by3a'
             num_output = self.num_output
             br1by3a_params = dict(name=name, num_output=num_output,
                                   kernel_w=1, kernel_h=3, pad_h=1, stride_h=self.stride, stride_w=1,
-                                 use_global_stats=self.use_global_stats)
+                                  use_global_stats=self.use_global_stats)
             br1by3a = ConvBNReLULego(br1by3a_params).attach(netspec, [br3by1a])
 
             name = self.name + '_branch_3by1b'
             br3by1b_params = dict(name=name, num_output=num_output,
-                                 kernel_w=3, kernel_h=1, pad_w=1, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                                  kernel_w=3, kernel_h=1, pad_w=1, stride=1,
+                                  use_global_stats=self.use_global_stats)
             br3by1a = ConvBNReLULego(br3by1b_params).attach(netspec, [br1by3a])
             name = self.name + '_branch_1by3b'
 
             br1by3a_params = dict(name=name, num_output=num_output,
-                                 kernel_w=1, kernel_h=3, pad_h=1, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                                  kernel_w=1, kernel_h=3, pad_h=1, stride=1,
+                                  use_global_stats=self.use_global_stats)
             br2_out = ConvBNReLULego(br1by3a_params).attach(netspec, [br3by1a])
 
         if self.main_branch == 'inception_trick_bottleneck':
             name = self.name + '_branch2a'
             num_output = self.num_output
             br2a_params = dict(name=name, num_output=num_output / 4,
-                                 kernel_size=1, pad=0, stride=self.stride,
-                                 use_global_stats=self.use_global_stats)
+                               kernel_size=1, pad=0, stride=self.stride,
+                               use_global_stats=self.use_global_stats)
             br2a = ConvBNReLULego(br2a_params).attach(netspec, bottom)
 
 
             name = self.name + '_branch_b_3by1'
             num_output = self.num_output
             br3by1a_params = dict(name=name, num_output=num_output / 4,
-                                 kernel_w=3, kernel_h=1, pad_w=1, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                                  kernel_w=3, kernel_h=1, pad_w=1, stride=1,
+                                  use_global_stats=self.use_global_stats)
             br3by1a = ConvBNReLULego(br3by1a_params).attach(netspec, [br2a])
 
             name = self.name + '_branch_b_1by3'
             num_output = self.num_output
             br1by3a_params = dict(name=name, num_output=num_output / 4,
                                   kernel_w=1, kernel_h=3, pad_h=1, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                                  use_global_stats=self.use_global_stats)
             br1by3a = ConvBNReLULego(br1by3a_params).attach(netspec, [br3by1a])
 
             name = self.name + '_branch2c'
             br2c_params = dict(name=name, num_output=num_output,
-                                 kernel_size=1, pad=0, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                               kernel_size=1, pad=0, stride=1,
+                               use_global_stats=self.use_global_stats)
             br2_out = ConvBNLego(br2c_params).attach(netspec, [br1by3a])
 
 
@@ -392,39 +394,39 @@ class ShortcutLego(BaseLego):
             name = self.name + '_branch2a'
             num_output = self.num_output
             br2a_params = dict(name=name, num_output=num_output / 4,
-                                 kernel_size=1, pad=0, stride=self.stride,
-                                 use_global_stats=self.use_global_stats)
+                               kernel_size=1, pad=0, stride=self.stride,
+                               use_global_stats=self.use_global_stats)
             br2a = ConvBNReLULego(br2a_params).attach(netspec, bottom)
 
             name = self.name + '_branch2b'
             br2b_params = dict(name=name, num_output=num_output / 4,
-                                 kernel_size=3, pad=1, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                               kernel_size=3, pad=1, stride=1,
+                               use_global_stats=self.use_global_stats)
             br2b = ConvBNReLULego(br2b_params).attach(netspec, [br2a])
 
             name = self.name + '_branch2c'
             br2c_params = dict(name=name, num_output=num_output,
-                                 kernel_size=1, pad=0, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                               kernel_size=1, pad=0, stride=1,
+                               use_global_stats=self.use_global_stats)
             br2_out = ConvBNLego(br2c_params).attach(netspec, [br2b])
 
         elif self.main_branch == 'inception':
             name = self.name + '_inception'
             inception_params = dict(name=name, num_output=self.num_output,
-                            use_global_stats=self.use_global_stats)
+                                    use_global_stats=self.use_global_stats)
             inception_params['downsample'] = True if self.shortcut == 'projection' else False
             br2_out = InceptionLego(inception_params).attach(netspec, bottom)
 
         elif self.main_branch == '2inception':
             name = self.name + '_inception_a'
             inception_params_a = dict(name=name, num_output=self.num_output,
-                            use_global_stats=self.use_global_stats,
-                            downsample=False)
+                                      use_global_stats=self.use_global_stats,
+                                      downsample=False)
             inception_a = InceptionLego(inception_params_a).attach(netspec, bottom)
 
             name = self.name + '_inception_b'
             inception_params_b = dict(name=name, num_output=self.num_output,
-                            use_global_stats=self.use_global_stats)
+                                      use_global_stats=self.use_global_stats)
             inception_params_b['downsample'] = True if self.shortcut == 'projection' else False
             br2_out = InceptionLego(inception_params_b).attach(netspec, [inception_a])
 
@@ -432,28 +434,28 @@ class ShortcutLego(BaseLego):
             name = self.name + '_branch2a'
             num_output = self.num_output
             br2a_params = dict(name=name, num_output=num_output,
-                                 kernel_size=3, pad=1, stride=self.stride,
-                                 use_global_stats=self.use_global_stats)
+                               kernel_size=3, pad=1, stride=self.stride,
+                               use_global_stats=self.use_global_stats)
             br2a = ConvBNReLULego(br2a_params).attach(netspec, bottom)
 
             name = self.name + '_branch2b'
             br2b_params = dict(name=name, num_output=num_output,
-                                 kernel_size=3, pad=1, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                               kernel_size=3, pad=1, stride=1,
+                               use_global_stats=self.use_global_stats)
             br2_out = ConvBNLego(br2b_params).attach(netspec, [br2a])
 
         elif self.main_branch == '1by1_normal':
             name = self.name + '_branch2a'
             num_output = self.num_output
             br2a_params = dict(name=name, num_output=num_output,
-                                 kernel_size=1, pad=0, stride=self.stride,
-                                 use_global_stats=self.use_global_stats)
+                               kernel_size=1, pad=0, stride=self.stride,
+                               use_global_stats=self.use_global_stats)
             br2a = ConvBNReLULego(br2a_params).attach(netspec, bottom)
 
             name = self.name + '_branch2b'
             br2b_params = dict(name=name, num_output=num_output,
-                                 kernel_size=1, pad=0, stride=1,
-                                 use_global_stats=self.use_global_stats)
+                               kernel_size=1, pad=0, stride=1,
+                               use_global_stats=self.use_global_stats)
             br2_out = ConvBNLego(br2b_params).attach(netspec, [br2a])
 
         # Combine the branches using EltwiseRelu lego

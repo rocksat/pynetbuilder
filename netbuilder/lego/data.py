@@ -29,8 +29,12 @@ class ImageDataLego(BaseLego):
             params['include'] = dict(phase=caffe.TEST)
         elif params['include'] == 'train':
             params['include'] = dict(phase=caffe.TRAIN)
-        params['image_data_param'] = dict(source=params['source'],
-                                          batch_size=params['batch_size'])
+        if 'image_data_param' in params:
+            params['image_data_param'].update(dict(source=params['source'],
+                                                   batch_size=params['batch_size']))
+        else:
+            params['image_data_param'] = dict(source=params['source'],
+                                              batch_size=params['batch_size'])
         if 'mean_file' in params:
             params['transform_param'] = dict(mean_file=params['mean_file'])
         self._required = ['name', 'source', 'batch_size', 'include']
